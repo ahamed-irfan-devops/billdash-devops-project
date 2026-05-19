@@ -24,18 +24,22 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          debug: true
           script: |
             set -e
             export PATH=$PATH:/usr/bin:/usr/local/bin:/snap/bin
-            echo ">>> Logged in as: $(whoami)"
-            echo ">>> Current dir: $(pwd)"
-            echo ">>> Docker version: $(docker --version)"
-            cd /home/${{ secrets.EC2_USER }}/billdash-devops-project || { echo "ERROR: Project folder not found"; exit 1; }
+
+            # Fix ownership and safe directory
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/billdash-devops-project
+            git config --global --add safe.directory /home/ubuntu/billdash-devops-project
+
+            cd /home/ubuntu/billdash-devops-project
+
             echo ">>> Pulling latest code..."
             git pull origin main
+
             echo ">>> Restarting containers..."
             docker compose down
             docker compose up -d --build
-            echo ">>> Done. Running containers:"
+
+            echo ">>> Running containers:"
             docker compose ps
