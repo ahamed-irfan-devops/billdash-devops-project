@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Create Bill{% endblock %}
+{% block content %}
+<h4 class="mb-3">Create Bill</h4>
+<form method="POST" action="{{ url_for('billing.create_bill') }}" id="billForm">
+  <table class="table table-bordered" id="billTable">
+    <thead class="table-dark">
+      <tr><th>Product</th><th>Price</th><th>Stock</th><th>Qty</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <select name="product_id" class="form-select product-select" required>
+            <option value="">-- Select --</option>
+            {% for p in products %}
+            <option value="{{ p.id }}" data-price="{{ p.price }}" data-stock="{{ p.stock }}">{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="price-cell">—</td>
+        <td class="stock-cell">—</td>
+        <td><input type="number" name="quantity" class="form-control qty-input" min="1" value="1" required></td>
+        <td><button type="button" class="btn btn-sm btn-danger remove-row">✕</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-outline-secondary btn-sm mb-3" id="addRow">+ Add Row</button>
+  <div class="d-flex justify-content-between align-items-center">
+    <h5>Total: ₹<span id="grandTotal">0.00</span></h5>
+    <button type="submit" class="btn btn-success">Generate Bill</button>
+  </div>
+</form>
+
+<script>
+function updateRow(row) {
+  const sel = row.querySelector('.product-select');
+  const opt = sel.options[sel.selectedIndex];
+  row.querySelector('.price-cell').textContent = opt.dataset.price ? '₹' + opt.dataset.price : '—';
+  row.querySelector('.stock-cell').textContent = opt.dataset.stock ?? '—';
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0;
+  document.querySelectorAll('#billTable tbody tr').forEach(row => {
+    const sel = row.querySelector('.product-select');
+    const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+    const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price) || 0;
+    total += price * qty;
+  });
+  document.getElementById('grandTotal').textContent = total.toFixed(2);
+}
+
+document.getElementById('billTable').addEventListener('change', e => {
+  const row = e.target.closest('tr');
+  if (row) updateRow(row);
+});
+
+document.getElementById('billTable').addEventListener('input', e => {
+  if (e.target.classList.contains('qty-input')) updateTotal();
+});
+
+document.getElementById('addRow').addEventListener('click', () => {
+  const tbody = document.querySelector('#billTable tbody');
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelector('.product-select').value = '';
+  clone.querySelector('.price-cell').textContent = '—';
+  clone.querySelector('.stock-cell').textContent = '—';
+  clone.querySelector('.qty-input').value = 1;
+  tbody.appendChild(clone);
+});
+
+document.getElementById('billTable').addEventListener('click', e => {
+  if (e.target.classList.contains('remove-row')) {
+    const tbody = document.querySelector('#billTable tbody');
+    if (tbody.rows.length > 1) { e.target.closest('tr').remove(); updateTotal(); }
+  }
+});
+</script>
+{% endblock %}

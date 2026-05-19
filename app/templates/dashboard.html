@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h4 class="mb-4">Dashboard</h4>
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card text-bg-primary">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-box"></i> Total Products</h6>
+        <h2>{{ total_products }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-success">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-currency-dollar"></i> Stock Value</h6>
+        <h2>₹{{ "%.2f"|format(stock_value) }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-info">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-receipt"></i> Bills Today</h6>
+        <h2>{{ bills_today }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mb-3">
+  <a href="{{ url_for('products.add_product') }}" class="btn btn-outline-primary me-2"><i class="bi bi-plus-circle"></i> Add Product</a>
+  <a href="{{ url_for('billing.billing') }}" class="btn btn-outline-success"><i class="bi bi-receipt"></i> New Bill</a>
+</div>
+
+<h6>Recent Bills</h6>
+<table class="table table-hover table-sm">
+  <thead><tr><th>#</th><th>Total</th><th>Date</th><th></th></tr></thead>
+  <tbody>
+    {% for bill in recent_bills %}
+    <tr>
+      <td>{{ bill.id }}</td>
+      <td>₹{{ bill.total_amount }}</td>
+      <td>{{ bill.created_at.strftime('%d %b %Y %H:%M') }}</td>
+      <td><a href="{{ url_for('billing.view_bill', id=bill.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-muted">No bills yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

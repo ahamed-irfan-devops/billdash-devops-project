@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Bill #{{ bill.id }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4>Bill #{{ bill.id }}</h4>
+  <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+</div>
+<p class="text-muted">{{ bill.created_at.strftime('%d %B %Y, %H:%M') }}</p>
+
+<table class="table table-bordered">
+  <thead class="table-dark">
+    <tr><th>Product</th><th>Unit Price</th><th>Qty</th><th>Subtotal</th></tr>
+  </thead>
+  <tbody>
+    {% for item in bill.items %}
+    <tr>
+      <td>{{ item.product.name }}</td>
+      <td>₹{{ item.unit_price }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>₹{{ "%.2f"|format(item.unit_price * item.quantity) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr class="table-success fw-bold">
+      <td colspan="3" class="text-end">Total</td>
+      <td>₹{{ bill.total_amount }}</td>
+    </tr>
+  </tfoot>
+</table>
+<a href="{{ url_for('billing.billing') }}" class="btn btn-primary btn-sm">New Bill</a>
+<a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+{% endblock %}
