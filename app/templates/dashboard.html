@@ -1,53 +1,153 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard — InvBill{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
 {% block content %}
-<h4 class="mb-4">Dashboard</h4>
+
+<!-- Stat Cards Row 1 -->
 <div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card text-bg-primary">
-      <div class="card-body">
-        <h6 class="card-title"><i class="bi bi-box"></i> Total Products</h6>
-        <h2>{{ total_products }}</h2>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+      <div>
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">{{ total_products }}</div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-success">
-      <div class="card-body">
-        <h6 class="card-title"><i class="bi bi-currency-dollar"></i> Stock Value</h6>
-        <h2>₹{{ "%.2f"|format(stock_value) }}</h2>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-green">
+      <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
+      <div>
+        <div class="stat-label">Stock Value</div>
+        <div class="stat-value">₹{{ "%.0f"|format(stock_value) }}</div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-info">
-      <div class="card-body">
-        <h6 class="card-title"><i class="bi bi-receipt"></i> Bills Today</h6>
-        <h2>{{ bills_today }}</h2>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-purple">
+      <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+      <div>
+        <div class="stat-label">Bills Today</div>
+        <div class="stat-value">{{ bills_today }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-orange">
+      <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+      <div>
+        <div class="stat-label">Revenue Today</div>
+        <div class="stat-value">₹{{ "%.0f"|format(revenue_today) }}</div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="mb-3">
-  <a href="{{ url_for('products.add_product') }}" class="btn btn-outline-primary me-2"><i class="bi bi-plus-circle"></i> Add Product</a>
-  <a href="{{ url_for('billing.billing') }}" class="btn btn-outline-success"><i class="bi bi-receipt"></i> New Bill</a>
+<!-- Stat Cards Row 2 -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-teal">
+      <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+      <div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">₹{{ "%.0f"|format(total_revenue) }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-indigo">
+      <div class="stat-icon"><i class="bi bi-journals"></i></div>
+      <div>
+        <div class="stat-label">Total Bills</div>
+        <div class="stat-value">{{ total_bills }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-yellow">
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+      <div>
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value">{{ low_stock }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card stat-red">
+      <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+      <div>
+        <div class="stat-label">Out of Stock</div>
+        <div class="stat-value">{{ out_of_stock }}</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<h6>Recent Bills</h6>
-<table class="table table-hover table-sm">
-  <thead><tr><th>#</th><th>Total</th><th>Date</th><th></th></tr></thead>
-  <tbody>
-    {% for bill in recent_bills %}
-    <tr>
-      <td>{{ bill.id }}</td>
-      <td>₹{{ bill.total_amount }}</td>
-      <td>{{ bill.created_at.strftime('%d %b %Y %H:%M') }}</td>
-      <td><a href="{{ url_for('billing.view_bill', id=bill.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
-    </tr>
-    {% else %}
-    <tr><td colspan="4" class="text-muted">No bills yet.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<!-- Tables Row -->
+<div class="row g-3">
+  <!-- Recent Bills -->
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-receipt me-1"></i> Recent Bills</span>
+        <a href="{{ url_for('billing.billing') }}" class="btn btn-sm btn-outline-success">+ New Bill</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>#</th><th>Amount</th><th>Items</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for bill in recent_bills %}
+            <tr>
+              <td><span class="badge bg-secondary">#{{ bill.id }}</span></td>
+              <td class="fw-semibold text-success">₹{{ bill.total_amount }}</td>
+              <td>{{ bill.items|length }} item(s)</td>
+              <td class="text-muted small">{{ bill.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+              <td><a href="{{ url_for('billing.view_bill', id=bill.id) }}" class="btn btn-xs btn-outline-primary btn-sm py-0 px-2">View</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No bills yet. <a href="{{ url_for('billing.billing') }}">Create one</a></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Low Stock Alert -->
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Low Stock Alerts</span>
+        <a href="{{ url_for('stock.stock') }}" class="btn btn-sm btn-outline-warning">Manage</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>Product</th><th>Category</th><th>Stock</th></tr>
+          </thead>
+          <tbody>
+            {% for p in low_stock_products %}
+            <tr>
+              <td class="fw-semibold">{{ p.name }}</td>
+              <td class="text-muted small">{{ p.category or '—' }}</td>
+              <td>
+                {% if p.stock == 0 %}
+                  <span class="badge bg-danger">Out of Stock</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">{{ p.stock }} left</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-4"><i class="bi bi-check-circle text-success"></i> All products well stocked</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
